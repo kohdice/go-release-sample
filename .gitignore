@@ -22,4 +22,10 @@ go.work
 go.work.sum
 
 # env file
-.env
+.env*
+
+# Ignore system-generated files for macOS and Windows
+.DS_Store
+Thumbs.db
+
+dist/
