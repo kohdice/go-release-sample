@@ -86,6 +86,8 @@ jobs:
       - build_for_macos
       - build_for_windows
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
