@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dist-linux
-          path: sample-linux-*.zip
+          path: sample-linux-*.tar.gz
 
   build_for_macos:
     name: Build for macOS
@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dist-darwin
-          path: sample-darwin-*.zip
+          path: sample-darwin-*.tar.gz
 
   build_for_windows:
     name: Build for Windows
@@ -98,6 +98,6 @@ jobs:
           draft: true
           generate_release_notes: true
           files: |
-            dist-linux/sample-linux-*.zip
-            dist-darwin/sample-darwin-*.zip
+            dist-linux/sample-linux-*.tar.gz
+            dist-darwin/sample-darwin-*.tar.gz
             dist-windows/sample-windows-*.zip
