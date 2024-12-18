@@ -7,30 +7,9 @@ env:
   GO_VERSION: stable
 
 jobs:
-  build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - os: linux
-            runner: ubuntu-latest
-            goos: linux
-            goarch: amd64
-            artifact: dist-linux/sample-linux-*.tar.gz
-            compress: tar.gz
-          - os: macos
-            runner: macos-latest
-            goos: darwin
-            goarch: arm64
-            artifact: dist-darwin/sample-darwin-*.tar.gz
-            compress: tar.gz
-          - os: windows
-            runner: windows-latest
-            goos: windows
-            goarch: amd64
-            artifact: dist-windows/sample-windows-*.zip
-            compress: zip
+  build_for_linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,18 +21,70 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - name: Build
         env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
+          GOOS: linux
+          GOARCH: amd64
         run: make release
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}
-          path: ${{ matrix.artifact }}
+          name: dist-linux
+          path: sample-linux-*.zip
+
+  build_for_macos:
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Build
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: make release
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-darwin
+          path: sample-darwin-*.zip
+
+  build_for_windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    steps:
+      - name: Install build dependencies
+        run: choco install zip
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Build
+        shell: bash
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: make release
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-windows
+          path: sample-windows-*.zip
 
   release:
     name: Draft Release
-    needs: build
+    needs:
+      - build_for_linux
+      - build_for_macos
+      - build_for_windows
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -67,6 +98,6 @@ jobs:
           draft: true
           generate_release_notes: true
           files: |
-            dist-linux/sample-linux-*.tar.gz
-            dist-darwin/sample-darwin-*.tar.gz
+            dist-linux/sample-linux-*.zip
+            dist-darwin/sample-darwin-*.zip
             dist-windows/sample-windows-*.zip
